@@ -14,7 +14,7 @@
   js=d.createElement(s);fs=d.getElementsByTagName(s)[0];
   js.src='https://apis.google.com/js/platform.js';
   fs.parentNode.insertBefore(js,fs);js.onload=function(){g.load('analytics');};
-}(window,document,'script'));     
+}(window,document,'script'));
       
 </script>
   </head>
@@ -26,99 +26,99 @@
     
     <script>
 
-// == NOTE ==
-// This code uses ES6 promises. If you want to use this code in a browser
-// that doesn't supporting promises natively, you'll have to include a polyfill.
-
-gapi.analytics.ready(function() {
-
-  /**
-   * Authorize the user immediately if the user has already granted access.
-   * If no access has been created, render an authorize button inside the
-   * element with the ID "embed-api-auth-container".
-   */
-  gapi.analytics.auth.authorize({
-    container: 'embed-api-auth-container',
-    clientid: 'REPLACE WITH YOUR CLIENT ID'
-  });
-
-
-  /**
-   * Create a new ActiveUsers instance to be rendered inside of an
-   * element with the id "active-users-container" and poll for changes every
-   * five seconds.
-   */
-  var activeUsers = new gapi.analytics.ext.ActiveUsers({
-    container: 'active-users-container',
-    pollingInterval: 5
-  });
-
-
-  /**
-   * Add CSS animation to visually show the when users come and go.
-   */
-  activeUsers.once('success', function() {
-    var element = this.container.firstChild;
-    var timeout;
-
-    this.on('change', function(data) {
-      var element = this.container.firstChild;
-      var animationClass = data.delta > 0 ? 'is-increasing' : 'is-decreasing';
-      element.className += (' ' + animationClass);
-
-      clearTimeout(timeout);
-      timeout = setTimeout(function() {
-        element.className =
-            element.className.replace(/ is-(increasing|decreasing)/g, '');
-      }, 3000);
-    });
+      // == NOTE ==
+      // This code uses ES6 promises. If you want to use this code in a browser
+      // that doesn't supporting promises natively, you'll have to include a polyfill.
+      
+      gapi.analytics.ready(function() {
+      
+        /**
+         * Authorize the user immediately if the user has already granted access.
+         * If no access has been created, render an authorize button inside the
+         * element with the ID "embed-api-auth-container".
+         */
+        gapi.analytics.auth.authorize({
+          container: 'embed-api-auth-container',
+          clientid: 'REPLACE WITH YOUR CLIENT ID'
+        });
+      
+      
+        /**
+         * Create a new ActiveUsers instance to be rendered inside of an
+         * element with the id "active-users-container" and poll for changes every
+         * five seconds.
+         */
+        var activeUsers = new gapi.analytics.ext.ActiveUsers({
+          container: 'active-users-container',
+          pollingInterval: 5
+        });
+      
+      
+        /**
+         * Add CSS animation to visually show the when users come and go.
+         */
+        activeUsers.once('success', function() {
+          var element = this.container.firstChild;
+          var timeout;
+      
+          this.on('change', function(data) {
+            var element = this.container.firstChild;
+            var animationClass = data.delta > 0 ? 'is-increasing' : 'is-decreasing';
+            element.className += (' ' + animationClass);
+      
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+              element.className =
+                  element.className.replace(/ is-(increasing|decreasing)/g, '');
+            }, 3000);
+          });
+          
     
     
     
+          // Start tracking active users for this view.
+        activeUsers.set(data).execute();
+        
+        
     
-      // Start tracking active users for this view.
-    activeUsers.set(data).execute();
+        Promise.all([thisWeek, lastWeek]).then(function(results) {
     
+          var data1 = results[0].rows.map(function(row) { return +row[2]; });
+          var data2 = results[1].rows.map(function(row) { return +row[2]; });
+          var labels = results[1].rows.map(function(row) { return +row[0]; });
     
+          labels = labels.map(function(label) {
+            return moment(label, 'YYYYMMDD').format('ddd');
+          });
     
-    Promise.all([thisWeek, lastWeek]).then(function(results) {
-
-      var data1 = results[0].rows.map(function(row) { return +row[2]; });
-      var data2 = results[1].rows.map(function(row) { return +row[2]; });
-      var labels = results[1].rows.map(function(row) { return +row[0]; });
-
-      labels = labels.map(function(label) {
-        return moment(label, 'YYYYMMDD').format('ddd');
+          var data = {
+            labels : labels,
+            datasets : [
+              {
+                label: 'Last Week',
+                fillColor : 'rgba(220,220,220,0.5)',
+                strokeColor : 'rgba(220,220,220,1)',
+                pointColor : 'rgba(220,220,220,1)',
+                pointStrokeColor : '#fff',
+                data : data2
+              },
+              {
+                label: 'This Week',
+                fillColor : 'rgba(151,187,205,0.5)',
+                strokeColor : 'rgba(151,187,205,1)',
+                pointColor : 'rgba(151,187,205,1)',
+                pointStrokeColor : '#fff',
+                data : data1
+              }
+            ]
+          };
+    
+          new Chart(makeCanvas('chart-1-container')).Line(data);
+          generateLegend('legend-1-container', data.datasets);
+        });
+      }
+    
       });
-
-      var data = {
-        labels : labels,
-        datasets : [
-          {
-            label: 'Last Week',
-            fillColor : 'rgba(220,220,220,0.5)',
-            strokeColor : 'rgba(220,220,220,1)',
-            pointColor : 'rgba(220,220,220,1)',
-            pointStrokeColor : '#fff',
-            data : data2
-          },
-          {
-            label: 'This Week',
-            fillColor : 'rgba(151,187,205,0.5)',
-            strokeColor : 'rgba(151,187,205,1)',
-            pointColor : 'rgba(151,187,205,1)',
-            pointStrokeColor : '#fff',
-            data : data1
-          }
-        ]
-      };
-
-      new Chart(makeCanvas('chart-1-container')).Line(data);
-      generateLegend('legend-1-container', data.datasets);
-    });
-  }
-
-  });
   
   
     </script>
